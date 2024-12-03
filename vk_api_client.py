@@ -3,7 +3,6 @@ import os
 
 from dotenv import load_dotenv
 from pprint import pprint
-from urllib.parse import urlencode
 
 
 class VKAPIClient:
@@ -42,9 +41,10 @@ class VKAPIClient:
         response = requests.get(self.__build_url('photos.get'), params=params)
         return self.__get_largest_photo(response.json())
     
-load_dotenv()
-access_token = os.getenv('ACCESS_TOKEN')
-user_id = os.getenv('USER_ID')
-client = VKAPIClient(access_token, user_id)
-output = client.photos_get()
-pprint(output)
+if __name__ == '__main__':
+    load_dotenv()
+    access_token = os.getenv('VK_ACCESS_TOKEN')
+    user_id = os.getenv('USER_ID')
+    client = VKAPIClient(access_token, user_id)
+    output = client.photos_get()
+    pprint(output)
