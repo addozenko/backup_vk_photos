@@ -22,7 +22,7 @@ class VKAPIClient:
         }
     
     def __build_url(self, api_method):
-        return f'{self.BASE_URL}/{api_method}'
+        return f'{self.BASE_URL}{api_method}'
 
     def __get_largest_photo(self, photos_array):
         result = []
@@ -35,7 +35,7 @@ class VKAPIClient:
             result.append(data)
         return result
 
-    def photos_get(self):
+    def get_photos(self):
         params = self.__get_common_params()
         params.update({'owner_id' : self.user_id, 'album_id' : 'profile', 'photo_sizes': 1, 'extended' : 1})
         response = requests.get(self.__build_url('photos.get'), params=params)
@@ -46,5 +46,5 @@ if __name__ == '__main__':
     access_token = os.getenv('VK_ACCESS_TOKEN')
     user_id = os.getenv('USER_ID')
     client = VKAPIClient(access_token, user_id)
-    output = client.photos_get()
+    output = client.get_photos()
     pprint(output)
