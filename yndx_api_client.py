@@ -2,11 +2,6 @@ import requests
 import os
 import json
 
-from dotenv import load_dotenv
-from pprint import pprint
-
-from vk_api_client import VKAPIClient
-
 
 class YNDXAPIClient:
 
@@ -36,42 +31,42 @@ class YNDXAPIClient:
     def __get_url_for_upload(self, file_name):
         params = self.__set_params(file_name)
         response = requests.get(self.__build_url('resources/upload'), headers=self.__set_headers(), params=params)
-        print(response.json().get('href'))
         return response.json().get('href')
 
-    def put_folder(self, folder_name):
+    def __get_folder_info(self, folder_name):
         params = self.__set_params(folder_name)
-        requests.put(self.__build_url('resources'), headers=self.__set_headers(), params=params)    
+        responce = requests.get(self.__build_url('resources'), headers=self.__set_headers(), params=params)
+        return responce.json()
+
+    def create_folder(self, folder_name):
+        params = self.__set_params(folder_name)
+        requests.put(self.__build_url('resources'), headers=self.__set_headers(), params=params) 
+        print(f'Создал папку - {folder_name}') 
 
     def delete_folder(self, folder_name, permanently=False):
         params = self.__set_params(folder_name)
         params.update({'permanently' : permanently})
         requests.delete(self.__build_url('resources'), headers=self.__set_headers(), params=params)
+        print(f'Удалил папку - {folder_name}') 
 
-    def post_photo(self, file_name, url):
-        params = self.__set_params(file_name)
+    def post_photo(self, file_name, url, folder_name = 'vk_images'):
+        if self.__get_folder_info(folder_name).get('error') == 'DiskNotFoundError':
+            self.create_folder(folder_name)
+        params = self.__set_params(f'{folder_name}/{file_name}')
         params.update({'url' : url})
         requests.post(self.__build_url('resources/upload'), headers=self.__set_headers(), params=params)
+        print(f'Загрузил фотографию - {folder_name}/{file_name}') 
 
-    def put_json_file(self, name, photo_data):
+    def put_json_file(self, name, photo_array, folder_name = 'vk_images'):
+        if self.__get_folder_info(folder_name).get('error') == 'DiskNotFoundError':
+            self.create_folder(folder_name) 
         file_name = f'{name}.json'
-        self.__create_json_file(file_name, photo_data)
+        self.__create_json_file(file_name, photo_array)
         with open(file_name, 'r') as f:
-            requests.put(self.__get_url_for_upload(file_name), files = {'file': f})
+            requests.put(self.__get_url_for_upload(f'{folder_name}/{file_name}'), files = {'file': f})
+            print(f'Загрузил файл - {folder_name}/{file_name}') 
         os.remove(f"./{file_name}")
         
 
 if __name__ == '__main__':
-    load_dotenv()
-    yndx_access_token = os.getenv('YNDX_CLOUD_ACCESS_TOKEN')
-    vk_access_token = os.getenv('VK_ACCESS_TOKEN')
-    user_id = os.getenv('USER_ID')
-    yndx_conn = YNDXAPIClient(yndx_access_token)
-    vk_conn = VKAPIClient(vk_access_token, user_id)
-    yndx_conn.create_folder('images')
-    for photo_array in vk_conn.get_photos():
-        photo_url = photo_array.pop('url')
-        photo_name = photo_array['file_name']
-        file_name = photo_array['file_name'].split('.')[0]
-        yndx_conn.put_json_file(file_name, photo_array)
-        yndx_conn.post_photo(photo_name, photo_url)
+    pass

@@ -1,8 +1,4 @@
 import requests
-import os
-
-from dotenv import load_dotenv
-from pprint import pprint
 
 
 class VKAPIClient:
@@ -42,9 +38,4 @@ class VKAPIClient:
         return self.__get_largest_photo(response.json())
     
 if __name__ == '__main__':
-    load_dotenv()
-    access_token = os.getenv('VK_ACCESS_TOKEN')
-    user_id = os.getenv('USER_ID')
-    client = VKAPIClient(access_token, user_id)
-    output = client.get_photos()
-    pprint(output)
+    pass
